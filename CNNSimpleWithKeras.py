@@ -1,43 +1,41 @@
+import tensorflow as tf
+import matplotlib.pyplot as plt
 import numpy as np
-import mnist
 
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
-from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical, normalize
+ 
+mnist = tf.keras.datasets.mnist #28x28 imagens de digitos escritos na mão (0-9)
 
-train_images = mnist.train_images()
-train_labels = mnist.train_labels()
-test_images = mnist.test_images()
-test_labels = mnist.test_labels()
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# Normalize the images.
-train_images = (train_images / 255) - 0.5
-test_images = (test_images / 255) - 0.5
-
-# Reshape the images.
-train_images = np.expand_dims(train_images, axis=3)
-test_images = np.expand_dims(test_images, axis=3)
-
-num_filters = 8
-filter_size = 3
-pool_size = 2
+x_train = normalize(x_train, axis=1)
+x_test = normalize(x_test, axis=1)
 
 model = Sequential([
-  Conv2D(num_filters, filter_size, input_shape=(28, 28, 1)),
-  MaxPooling2D(pool_size=pool_size),
   Flatten(),
-  Dense(10, activation='softmax'),
+  Dense(128, activation=tf.nn.relu), # neurônios, função de ativação
+  Dense(128, activation=tf.nn.relu), # neurônios, função de ativação
+  Dense(10, activation=tf.nn.softmax) # neurônios de saída, função de ativação
 ])
 
 model.compile(
   'adam',
-  loss='categorical_crossentropy',
+  loss='sparse_categorical_crossentropy',
   metrics=['accuracy'],
 )
 
 model.fit(
-  train_images,
-  to_categorical(train_labels),
+  x_train,
+  y_train,
   epochs=3,
-  validation_data=(test_images, to_categorical(test_labels)),
 )
+
+model.save('cnnsimple.h5')
+new_model = load_model('cnnsimple.h5')
+pred = new_model.predict([x_test])
+
+print(np.argmax(pred[0]))
+plt.imshow(x_test[0])
+plt.show()
