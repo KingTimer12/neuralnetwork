@@ -1,6 +1,6 @@
 from mylibneural.train import train
 from mylibneural.neuralnetwork import NeuralNet
-from mylibneural.layers import Linear, Tanh, Sigmoid
+from mylibneural.layers import Linear, Tanh, Sigmoid, Softmax
 from mylibneural.optim import SGD
 from typing import List
 
@@ -26,7 +26,7 @@ targets = np.array([
 
 net = NeuralNet([
     Linear(input_size=2, output_size=50),
-    Sigmoid(),
+    Softmax(),
     Linear(input_size=50, output_size=2)
 ])
 
@@ -35,7 +35,7 @@ train(
     inputs,
     targets,
     num_epochs=500,
-    optimizer=SGD(0.01)
+    optimizer=SGD(0.001)
 )
 
 emily = np.array([-7, -3]) # 128 pounds, 63 inches

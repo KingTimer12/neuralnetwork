@@ -86,6 +86,23 @@ class Activation(Layer):
         """
         return self.f_prime(self.inputs) * grad
 
+"""
+class Softmax(Layer):
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def forward(self, inputs: Tensor) -> Tensor:
+        totals = inputs @ self.params["w"] + self.params["b"]
+        exp = np.exp(totals)
+        self.output = exp / np.sum(exp, axis=0)
+        return self.output
+    
+    def backward(self, grad: Tensor) -> Tensor:
+        n = np.size(self.output)
+        tmp = np.tile(self.output, n)
+        return np.dot(tmp * (np.identity(n) - tmp.T), grad)
+"""
+
 def tanh(x: Tensor) -> Tensor:
     return np.tanh(x)
 
@@ -105,3 +122,15 @@ def sigmoid_prime(x: Tensor) -> Tensor:
 class Sigmoid(Activation):
     def __init__(self) -> None:
         super().__init__(sigmoid, sigmoid_prime)
+
+def softmax(x: Tensor) -> Tensor:
+    e = np.exp(x - np.max(x))
+    return e / e.sum(axis=0, keepdims=True)
+
+def softmax_prime(x: Tensor) -> Tensor:
+    Sx = softmax(x)
+    return (Sx * np.identity(Sx.size) - Sx.transpose() @ Sx)
+
+class Softmax(Activation):
+    def __init__(self) -> None:
+        super().__init__(softmax, softmax_prime)
